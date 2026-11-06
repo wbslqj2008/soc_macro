@@ -1,0 +1,36 @@
+name: Build and publish update
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_REPOSITORY: ${{ github.repository }}
+      RELEASE_COMMIT: ${{ github.sha }}
+      RELEASE_RUN_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Check update behavior
+        shell: pwsh
+        run: dotnet run --project tests/UpdaterChecks/UpdaterChecks.csproj
+      - name: Build and publish release
+        shell: pwsh
+        run: |
+          $version = "0.1.$env:RELEASE_RUN_NUMBER"
+          ./SocMacro/publish_release.ps1 -Version $version -UpdateRepository $env:RELEASE_REPOSITORY -ReleaseCommit $env:RELEASE_COMMIT -Upload

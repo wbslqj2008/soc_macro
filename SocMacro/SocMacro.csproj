@@ -15,9 +15,11 @@
     <AssemblyName>SocMacro</AssemblyName>
     <RootNamespace>SocMacro</RootNamespace>
     <Version>0.1.0</Version>
+    <UpdateRepository Condition="'$(UpdateRepository)' == ''">wbslqj2008/soc_macro</UpdateRepository>
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyMetadata Include="UpdateRepository" Value="$(UpdateRepository)" />
     <PackageReference Include="OpenCvSharp4.Windows" Version="4.13.0.20260627" />
     <PackageReference Include="WPF-UI" Version="4.0.3" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />

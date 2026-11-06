@@ -20,11 +20,12 @@ public sealed record GitHubRelease(
     [property: JsonPropertyName("assets")] ReleaseAsset[] Assets);
 
 public sealed record AvailableUpdate(Version Version, string Notes, ReleaseAsset Exe, ReleaseAsset Checksum);
+public sealed record DownloadedUpdate(string Path, string Sha256);
 
 /// <summary>Public release assets only: no GitHub credential is distributed with the app.</summary>
 public sealed class UpdateService(HttpClient http, string repository, string downloadRoot)
 {
-    public const string DefaultRepository = "wbslqj2008/soc-macro-releases";
+    public const string DefaultRepository = "wbslqj2008/soc_macro";
     private const long MaxDownloadSize = 512L * 1024 * 1024;
 
     public static string Repository => typeof(UpdateService).Assembly
@@ -67,7 +68,7 @@ public sealed class UpdateService(HttpClient http, string repository, string dow
         return new AvailableUpdate(version, release.Notes ?? "", exe, checksum);
     }
 
-    public async Task<string> DownloadAsync(AvailableUpdate update, IProgress<double> progress, CancellationToken ct)
+    public async Task<DownloadedUpdate> DownloadAsync(AvailableUpdate update, IProgress<double> progress, CancellationToken ct)
     {
         ValidateUrl(update.Exe.DownloadUrl);
         ValidateUrl(update.Checksum.DownloadUrl);
@@ -85,7 +86,7 @@ public sealed class UpdateService(HttpClient http, string repository, string dow
         if (File.Exists(target) && new FileInfo(target).Length == update.Exe.Size && await HasHashAsync(target, hash, ct))
         {
             progress.Report(100);
-            return target;
+            return new DownloadedUpdate(target, hash);
         }
         // Each process owns its partial file; another app instance cannot install a partial download.
         var partial = Path.Combine(folder, $"{Guid.NewGuid():N}.partial");
@@ -115,7 +116,7 @@ public sealed class UpdateService(HttpClient http, string repository, string dow
                 throw new InvalidDataException("업데이트 파일 검증에 실패했습니다. 다시 시도해 주세요.");
             File.Move(partial, target, overwrite: true);
             progress.Report(100);
-            return target;
+            return new DownloadedUpdate(target, hash);
         }
         finally
         {

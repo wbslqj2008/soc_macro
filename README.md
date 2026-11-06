@@ -4,6 +4,8 @@
 
 ## 실행
 
+- GitHub 등록 및 새 버전 자동 다운로드 배포: [업데이트 배포 안내](docs/업데이트_배포.md).
+
 - `SocMacro\bin\Release\net9.0-windows10.0.19041.0\win-x64\SocMacro.exe` 실행 (관리자 권한으로 실행됩니다)
 - **F9** 시작, **F10** 정지. 입력 차단 중에도 F10은 항상 동작합니다.
 - `SocMacro.exe --autostart`로 실행하면 켜자마자 시작합니다 (작업 스케줄러 예약용).
