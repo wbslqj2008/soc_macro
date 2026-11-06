@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Key-only licensing. Knowing a key is the credential, so keys are random and can't be listed.
+//  ids/{key}: tier ("basic" | "pro"), admin (bool), note, createdAt, lastSeen
+// Admin operations (create/delete keys, change tier) use the project owner's Google credentials,
+// which bypass these rules, so no client write can touch tier/admin/note.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    match /ids/{key} {
+      allow get: if true;
+      allow list, create, delete: if false;
+
+      // the app only stamps "last used" with the server time
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeen'])
+        && request.resource.data.lastSeen == request.time;
+    }
+  }
+}

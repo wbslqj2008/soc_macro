@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Obfuscar settings for SocMacro.dll (our own assembly only; third-party libraries are left alone).
+  publish_release.ps1 copies this into the build output and runs it there, so InPath is ".".
+
+  - HideStrings: encrypts all string literals (Firebase URL/key, field names, every UI/log string).
+  - HidePrivateApi + Rename*: renames private/internal members. KeepPublicApi keeps public type and
+    member names so the compiled WPF (BAML) still finds its code-behind — this keeps the UI working.
+-->
+<Obfuscator>
+  <Var name="InPath" value="." />
+  <Var name="OutPath" value=".\obfuscated" />
+  <Var name="KeepPublicApi" value="true" />
+  <Var name="HidePrivateApi" value="true" />
+  <Var name="HideStrings" value="true" />
+  <Var name="RenameProperties" value="true" />
+  <Var name="RenameFields" value="true" />
+  <Var name="RenameEvents" value="true" />
+  <Var name="ReuseNames" value="true" />
+  <Var name="UseUnicodeNames" value="false" />
+  <Var name="OptimizeMethods" value="true" />
+  <Var name="SuppressIldasm" value="true" />
+
+  <Module file="$(InPath)\SocMacro.dll" />
+</Obfuscator>

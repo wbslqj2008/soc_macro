@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 10 SDK target gives access to Windows.Media.Ocr -->
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <AssemblyName>SocMacro</AssemblyName>
+    <RootNamespace>SocMacro</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.13.0.20260627" />
+    <PackageReference Include="WPF-UI" Version="4.0.3" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- screen-recognition templates live inside the assembly (see Vision) -->
+    <EmbeddedResource Include="Assets\templates\*.png" />
+  </ItemGroup>
+
+  <!--
+    Obfuscate SocMacro.dll right after Build (pass -p:Obfuscate=true). This runs before the
+    single-file bundler, so the published exe embeds the obfuscated assembly. It works on the
+    build output directory, where every referenced dll is present for reference resolution.
+    Third-party libraries are left untouched; see obfuscar.xml.
+  -->
+  <Target Name="ObfuscateAssembly" AfterTargets="Build" Condition="'$(Obfuscate)' == 'true'">
+    <Message Importance="high" Text="난독화: $(OutDir)SocMacro.dll" />
+    <Exec WorkingDirectory="$(OutDir)"
+          Command="dotnet tool run obfuscar.console -- &quot;$(MSBuildProjectDirectory)\obfuscar.xml&quot;" />
+    <Copy SourceFiles="$(OutDir)obfuscated\SocMacro.dll" DestinationFiles="$(OutDir)SocMacro.dll"
+          OverwriteReadOnlyFiles="true" />
+    <RemoveDir Directories="$(OutDir)obfuscated" />
+  </Target>
+
+</Project>
