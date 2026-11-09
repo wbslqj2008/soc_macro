@@ -48,15 +48,39 @@ try
         Assert(await service.CheckAsync(new Version(1, 2, 3), default) == null);
         Assert(await service.CheckAsync(new Version(2, 0, 0), default) == null);
     });
-    await Check("prerelease ignored", async () =>
+    await Check("non-public releases cannot bypass required version check", async () =>
     {
-        using var http = Client(Release(prerelease: true));
-        Assert(await new UpdateService(http, "example/releases", root).CheckAsync(new Version(1, 0), default) == null);
+        foreach (var release in new[] { Release(prerelease: true), Release() with { Draft = true } })
+        {
+            using var http = Client(release);
+            await Reject(async () => { await new UpdateService(http, "example/releases", root).CheckAsync(new Version(1, 0), default); });
+        }
     });
-    await Check("unpublished release allows normal startup", async () =>
+    await Check("missing release, rate limit and server errors cannot bypass required version check", async () =>
     {
-        using var http = new HttpClient(new Handler(_ => new(HttpStatusCode.NotFound)));
-        Assert(await new UpdateService(http, "example/releases", root).CheckAsync(new Version(1, 0), default) == null);
+        foreach (var status in new[] { HttpStatusCode.NotFound, HttpStatusCode.Forbidden, HttpStatusCode.ServiceUnavailable })
+        {
+            using var http = new HttpClient(new Handler(_ => new(status)));
+            try { await new UpdateService(http, "example/releases", root).CheckAsync(new Version(1, 0), default); }
+            catch (HttpRequestException ex) when (ex.StatusCode == status) { continue; }
+            throw new Exception("Failed version check was not rejected: " + status);
+        }
+    });
+    await Check("network failure cannot bypass required version check", async () =>
+    {
+        using var http = new HttpClient(new Handler(_ => throw new HttpRequestException("Offline")));
+        try { await new UpdateService(http, "example/releases", root).CheckAsync(new Version(1, 0), default); }
+        catch (HttpRequestException) { return; }
+        throw new Exception("Network failure was not propagated");
+    });
+    await Check("canceled version check cannot allow startup", async () =>
+    {
+        using var http = Client(Release());
+        using var cancel = new CancellationTokenSource();
+        cancel.Cancel();
+        try { await new UpdateService(http, "example/releases", root).CheckAsync(new Version(1, 0), cancel.Token); }
+        catch (OperationCanceledException) { return; }
+        throw new Exception("Version check cancellation was not propagated");
     });
     await Check("foreign URL rejected", async () =>
     {

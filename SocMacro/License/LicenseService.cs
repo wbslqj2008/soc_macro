@@ -178,10 +178,19 @@ public sealed class LicenseAdmin
 
     public static bool Available => File.Exists(CliConfig);
 
-    public async Task<string> CreateKey(string? customKey, LicenseTier tier, string note)
+    internal static string PrepareNewKey(string? customKey)
     {
         string key = string.IsNullOrWhiteSpace(customKey) ? LicenseService.NewKey() : LicenseService.NormalizeKey(customKey);
-        if (key.Length < 4) throw new LicenseException("키는 4자 이상이어야 합니다.");
+        int length = key.Count(c => c != '-');
+        if (length < 4) throw new LicenseException("키는 공백과 하이픈을 제외하고 4자 이상이어야 합니다.");
+        if (length > 16) throw new LicenseException("키는 공백과 하이픈을 제외하고 최대 16자까지 지정할 수 있습니다.");
+        return key;
+    }
+
+    public async Task<string> CreateKey(string? customKey, LicenseTier tier, string note)
+    {
+        // Validate before building a request or accessing owner credentials.
+        string key = PrepareNewKey(customKey);
         var write = new JsonObject
         {
             ["update"] = new JsonObject

@@ -2,7 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="소오콘 매크로 - 업데이트" Width="500" Height="410" ResizeMode="NoResize"
+    Title="소오콘 매크로 - 필수 업데이트" Width="500" Height="450" ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen" FontFamily="Malgun Gothic"
     ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica" WindowCornerPreference="Round">
     <Grid>
@@ -10,7 +10,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ui:TitleBar Title="소오콘 매크로 업데이트" ShowMaximize="False" ShowMinimize="False" />
+        <ui:TitleBar Title="소오콘 매크로 필수 업데이트" ShowMaximize="False" ShowMinimize="False" />
         <Grid Grid.Row="1" Margin="28,12,28,24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -24,9 +24,9 @@
                 <TextBlock x:Name="NotesText" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
             </ScrollViewer>
             <ProgressBar x:Name="DownloadProgress" Grid.Row="2" Height="6" Maximum="100" />
-            <TextBlock x:Name="StatusText" Grid.Row="3" Text="새 버전을 자동으로 다운로드합니다." TextWrapping="Wrap" Margin="0,10,0,16" />
+            <TextBlock x:Name="StatusText" Grid.Row="3" Text="프로그램을 사용하려면 업데이트를 완료해야 합니다." TextWrapping="Wrap" Margin="0,10,0,16" />
             <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
-                <ui:Button x:Name="LaterButton" Content="취소하고 계속 사용" Click="Later_Click" Margin="0,0,8,0" />
+                <ui:Button x:Name="ExitButton" Content="프로그램 종료" Click="Exit_Click" Margin="0,0,8,0" />
                 <ui:Button x:Name="ActionButton" Content="다시 시도" Appearance="Primary" Click="Action_Click" Visibility="Collapsed" />
             </StackPanel>
         </Grid>

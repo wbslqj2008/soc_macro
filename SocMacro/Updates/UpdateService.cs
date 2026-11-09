@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
@@ -48,11 +47,11 @@ public sealed class UpdateService(HttpClient http, string repository, string dow
         if (!System.Text.RegularExpressions.Regex.IsMatch(repository, @"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"))
             throw new InvalidDataException("업데이트 저장소 주소가 올바르지 않습니다.");
         using var response = await http.GetAsync($"https://api.github.com/repos/{repository}/releases/latest", ct);
-        if (response.StatusCode == HttpStatusCode.NotFound) return null; // no release published yet
         response.EnsureSuccessStatusCode();
         var release = await response.Content.ReadFromJsonAsync<GitHubRelease>(ct)
             ?? throw new InvalidDataException("업데이트 정보를 읽을 수 없습니다.");
-        if (release.Draft || release.Prerelease) return null;
+        if (release.Draft || release.Prerelease)
+            throw new InvalidDataException("정식 업데이트 버전을 확인할 수 없습니다.");
         if (!Version.TryParse(release.Tag?.TrimStart('v', 'V'), out var version))
             throw new InvalidDataException("업데이트 버전이 올바르지 않습니다.");
         version = Normalize(version);

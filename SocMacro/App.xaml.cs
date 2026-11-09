@@ -56,25 +56,39 @@ public partial class App : Application
         using (var http = UpdateService.CreateClient())
         {
             var updater = new UpdateService(http, UpdateService.Repository, UpdateService.DownloadRoot);
-            try
+            AvailableUpdate? update;
+            while (true)
             {
-                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                var update = await updater.CheckAsync(UpdateService.CurrentVersion, timeout.Token);
-                if (update != null && new UpdateWindow(updater, update).ShowDialog() == true)
-                {
-                    Shutdown();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                // An offline server, rate limit, or invalid release must not prevent normal startup.
                 try
                 {
-                    Directory.CreateDirectory(UpdateService.DownloadRoot);
-                    File.AppendAllText(Path.Combine(UpdateService.DownloadRoot, "update.log"), $"[{DateTime.Now:O}] {ex.Message}\n");
+                    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    update = await updater.CheckAsync(UpdateService.CurrentVersion, timeout.Token);
+                    break;
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(UpdateService.DownloadRoot);
+                        File.AppendAllText(Path.Combine(UpdateService.DownloadRoot, "update.log"), $"[{DateTime.Now:O}] {ex.Message}\n");
+                    }
+                    catch (Exception) { }
+                    var retry = MessageBox.Show(
+                        $"최신 버전을 확인하지 못했습니다. 프로그램을 사용하려면 버전 확인이 필요합니다.\n인터넷 연결을 확인해 주세요. 확인을 누르면 다시 시도하고, 취소를 누르면 종료합니다.\n\n{ex.Message}",
+                        "소오콘 매크로 업데이트", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    if (retry != MessageBoxResult.OK)
+                    {
+                        Shutdown();
+                        return;
+                    }
+                }
+            }
+            if (update != null)
+            {
+                // Every exit from this dialog ends the old process, including cancel and the close button.
+                new UpdateWindow(updater, update).ShowDialog();
+                Shutdown();
+                return;
             }
         }
 

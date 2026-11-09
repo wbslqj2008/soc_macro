@@ -29,6 +29,9 @@ jobs:
       - name: Check update behavior
         shell: pwsh
         run: dotnet run --project tests/UpdaterChecks/UpdaterChecks.csproj
+      - name: Check license key validation
+        shell: pwsh
+        run: dotnet run --project tests/LicenseChecks/LicenseChecks.csproj
       - name: Build and publish release
         shell: pwsh
         run: |

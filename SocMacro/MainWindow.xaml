@@ -632,7 +632,8 @@
                                     </StackPanel>
                                     <StackPanel Margin="0,0,16,8">
                                         <TextBlock Text="직접 지정 (선택, 1개일 때)" Style="{StaticResource RowDesc}" Margin="0,0,0,4" />
-                                        <ui:TextBox x:Name="CustomKey" PlaceholderText="비우면 무작위" Width="170" />
+                                        <ui:TextBox x:Name="CustomKey" PlaceholderText="최대 16자 / 비우면 무작위" Width="200"
+                                                    ToolTip="공백과 하이픈을 제외하고 4~16자까지 지정할 수 있습니다." />
                                     </StackPanel>
                                 </WrapPanel>
                                 <ui:Button Appearance="Primary" Content="발급" Click="IssueKeys_Click" />
